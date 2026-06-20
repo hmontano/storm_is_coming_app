@@ -1,0 +1,5 @@
+.venv-storm/
+__pycache__/
+*.pyc
+*.log
+.env
