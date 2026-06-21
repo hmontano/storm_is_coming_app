@@ -33,12 +33,12 @@ now = datetime.now(timezone.utc)
 fake_warning = TornadoWarning(
     alert_id="urn:oid:SIMULATED.001",
     event="Tornado Warning",
-    area_desc="St. Charles County, MO",
-    county_fips={"29183"},   # St. Charles County FIPS
+    area_desc="Jefferson County, MO",
+    county_fips={"29099"},   # Jefferson County FIPS
     sent=now,
     expires=now + timedelta(hours=1),
     severity="Extreme",
-    headline="TORNADO WARNING issued for St. Charles County until 10:00 PM CDT",
+    headline="TORNADO WARNING issued for Jefferson County until 10:00 PM CDT",
 )
 
 print(f"Alert ID    : {fake_warning.alert_id}")
@@ -66,5 +66,12 @@ if matched:
     print()
     print("📣 ALERT WOULD FIRE:")
     print(f"   {fake_warning.headline}")
+    print()
+
+    # Fire the real notifier so we can test the full pipeline end-to-end
+    print("Sending push notification via ntfy.sh...")
+    from notify import send_alert
+    send_alert(fake_warning, set(matched_fips), is_home)
+    print("Done — check your phone.")
 else:
     print("✅ No match — warned counties are outside your watch set. No alert.")

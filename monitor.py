@@ -23,6 +23,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 import config
 from adjacency import load_adjacency, get_watch_counties
+from notify import send_alert
 from nws import TornadoWarning, get_active_tornado_warnings
 
 # ---------------------------------------------------------------------------
@@ -124,10 +125,9 @@ def _fire_alert(warning: TornadoWarning, matched_fips: set[str]) -> None:
     logger.warning("=" * 60)
 
     # ---------------------------------------------------------------
-    # Phase 4 hook — notifier call goes here, e.g.:
-    #   from notify import send_alert
-    #   send_alert(warning, matched_fips, is_home)
+    # Phase 4 — send push notification via ntfy.sh
     # ---------------------------------------------------------------
+    send_alert(warning, matched_fips, is_home)
 
 
 # ---------------------------------------------------------------------------
