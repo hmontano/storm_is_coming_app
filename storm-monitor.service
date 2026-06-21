@@ -1,0 +1,23 @@
+[Unit]
+Description=Storm Is Coming — Tornado Warning Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/hagen-montano/Documents/Kiro/Projects/storm_is_coming_app
+ExecStart=/home/hagen-montano/Documents/Kiro/Projects/storm_is_coming_app/.venv-storm/bin/python monitor.py
+
+# Load the .env file so NTFY_TOPIC is available
+EnvironmentFile=/home/hagen-montano/Documents/Kiro/Projects/storm_is_coming_app/.env
+
+# Restart the process automatically if it crashes, after a 10s cooldown
+Restart=on-failure
+RestartSec=10
+
+# Log stdout/stderr to the systemd journal (view with: journalctl --user -u storm-monitor)
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
