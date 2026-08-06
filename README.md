@@ -26,6 +26,8 @@ cp .env.example .env
 
 ## Running as a Persistent Service (systemd)
 
+### First-time install
+
 ```bash
 mkdir -p ~/.config/systemd/user
 cp storm-monitor.service ~/.config/systemd/user/
@@ -37,20 +39,66 @@ systemctl --user start storm-monitor
 loginctl enable-linger $USER
 ```
 
-Useful commands:
+### Starting and stopping
+
+`systemctl` tracks two independent things: whether the service is **running right now**
+(active/inactive) and whether it **starts automatically on login or reboot**
+(enabled/disabled). Turning the monitor off or back on usually means setting both.
+
 ```bash
-# Check status
-systemctl --user status storm-monitor
+# Start now, and start automatically on every login/reboot
+systemctl --user enable --now storm-monitor
 
-# View live logs
-journalctl --user -u storm-monitor -f
+# Stop now, and stay off across reboots
+systemctl --user disable --now storm-monitor
+```
 
-# Stop the service
-systemctl --user stop storm-monitor
+If you only want to change one of the two:
 
-# Restart after code changes
+```bash
+systemctl --user start storm-monitor     # run now, don't change boot behavior
+systemctl --user stop storm-monitor      # stop now, but it returns on reboot if enabled
+systemctl --user enable storm-monitor    # run on boot, don't start now
+systemctl --user disable storm-monitor   # don't run on boot, don't stop now
+```
+
+Pick up code changes without touching the enabled state:
+
+```bash
 systemctl --user restart storm-monitor
 ```
+
+If you edited `storm-monitor.service` itself, copy it over and reload the unit
+definitions first, otherwise systemd keeps using the old copy:
+
+```bash
+cp storm-monitor.service ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user restart storm-monitor
+```
+
+### Checking on it
+
+```bash
+# Is it running? Is it enabled?
+systemctl --user status storm-monitor
+systemctl --user is-active storm-monitor
+systemctl --user is-enabled storm-monitor
+
+# Follow live logs
+journalctl --user -u storm-monitor -f
+
+# Recent history, including runs from previous boots
+journalctl --user -u storm-monitor --since "2 hours ago"
+```
+
+A healthy service logs a poll roughly every 3 minutes. If polls have stopped
+appearing while the service still reports `active`, check the logs for repeated
+`api.weather.gov` request failures.
+
+> **Current state:** the monitor is stopped and disabled as of 2026-08-05, so **no
+> tornado alerts are being sent**. Re-enable with
+> `systemctl --user enable --now storm-monitor`.
 
 ## Running Manually
 
